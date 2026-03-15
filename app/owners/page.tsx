@@ -2,14 +2,25 @@
 
 import React from 'react';
 
+// Определяем интерфейс для владельца
+interface Owner {
+  id: number;
+  name: string;
+  animal: string;
+  address: string;
+  phone: string;
+  email: string;
+}
+
 export default function OwnersPage() {
-  const [owners, setOwners] = React.useState([]);
+  // Указываем тип для состояния
+  const [owners, setOwners] = React.useState<Owner[]>([]);
   const [loading, setLoading] = React.useState(true);
 
   React.useEffect(() => {
     fetch('/owners.json')
       .then(res => res.json())
-      .then(data => {
+      .then((data: Owner[]) => {
         setOwners(data);
         setLoading(false);
       })
