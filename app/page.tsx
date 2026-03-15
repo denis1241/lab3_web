@@ -1,65 +1,133 @@
-import Image from "next/image";
+'use client';
+
+import React from 'react';
+import AwesomeSlider from 'react-awesome-slider';
+import 'react-awesome-slider/dist/styles.css';
+import 'react-awesome-slider/dist/captioned.css';
+
+// Стили для карточки животного
+const animalCardStyle = {
+  position: 'relative',
+  width: '100%',
+  height: '500px',
+  overflow: 'hidden'
+};
+
+const imageStyle = {
+  width: '100%',
+  height: '100%',
+  objectFit: 'cover' as const
+};
+
+const textOverlayStyle = {
+  position: 'absolute',
+  bottom: '0',
+  left: '0',
+  right: '0',
+  background: 'linear-gradient(to top, rgba(0,0,0,0.8), transparent)',
+  color: 'white',
+  padding: '30px 20px 20px 20px',
+  textAlign: 'center' as const
+};
+
+const headerStyle = {
+  fontSize: '32px',
+  margin: '0 0 10px 0',
+  textShadow: '2px 2px 4px rgba(0,0,0,0.5)'
+};
+
+const contentStyle = {
+  fontSize: '18px',
+  margin: '0',
+  textShadow: '1px 1px 2px rgba(0,0,0,0.5)'
+};
+
+function sendEmail(email) {
+  const user = typeof window !== 'undefined' ? localStorage.getItem('user') : '';
+  const body = `Здравствуйте, я нашел вашего питомца.%0A-----------%0AС уважением, ${user}`;
+  window.open(`mailto:${email}?subject=Потерянный зверь&body=${body}`);
+}
+
+function Animal(props) {
+  if (!props.data) return <p>Loading</p>;
+  const { header, content, img } = props.data;
+  
+  return (
+    <div style={animalCardStyle}>
+      <img
+        style={imageStyle}
+        src={img}
+        alt={header}
+      />
+      <div style={textOverlayStyle}>
+        <h1 style={headerStyle}>{header}</h1>
+        <p style={contentStyle}>{content}</p>
+      </div>
+    </div>
+  );
+}
 
 export default function Home() {
+  const [animals, setAnimals] = React.useState([]);
+
+  React.useEffect(() => {
+    fetch('/animals.json')
+      .then(data => data.json())
+      .then(data => setAnimals(data));
+  }, []);
+
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      let user = localStorage.getItem('user');
+      if (user === null) {
+        while (user === null) {
+          user = prompt("Введите ваше имя пользователя");
+          if (!user) {
+            alert('Обязательно!');
+          } else {
+            localStorage.setItem('user', user);
+          }
+        }
+      }
+    }
+  }, []);
+
+  function logout() {
+    localStorage.clear();
+    window.location.reload();
+  }
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+    <>
+      <div>
+        <button onClick={logout} style={{ position: 'absolute', top: 10, right: 10, zIndex: 10 }}>logout</button>
+        <h1 style={{ textAlign: 'center' }}>Petto</h1>
+        
+        <AwesomeSlider style={{ "--slider-height-percentage": "60%" }}>
+          {animals.map((data, i) => (
+            <div key={i} onClick={() => sendEmail(data?.email)}>
+              <Animal data={data} />
+            </div>
+          ))}
+        </AwesomeSlider>
+        
+        <footer style={{ textAlign: 'center', padding: '20px' }}>
+          Petto, (c) 2026
+        </footer>
+      </div>
+      
+      <div style={{ textAlign: 'center', margin: '20px' }}>
+        <a href="/owners" style={{
+          display: 'inline-block',
+          padding: '10px 20px',
+          backgroundColor: '#007bff',
+          color: 'white',
+          textDecoration: 'none',
+          borderRadius: '5px'
+        }}>
+          Посмотреть местоположение хозяев
+        </a>
+      </div>
+    </>
   );
 }
