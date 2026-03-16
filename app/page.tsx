@@ -7,7 +7,7 @@ import 'react-awesome-slider/dist/captioned.css';
 
 // Стили для карточки животного
 const animalCardStyle = {
-  position: 'relative',
+  position: 'relative' as const,
   width: '100%',
   height: '500px',
   overflow: 'hidden'
@@ -20,7 +20,7 @@ const imageStyle = {
 };
 
 const textOverlayStyle = {
-  position: 'absolute',
+  position: 'absolute' as const,
   bottom: '0',
   left: '0',
   right: '0',
@@ -42,13 +42,22 @@ const contentStyle = {
   textShadow: '1px 1px 2px rgba(0,0,0,0.5)'
 };
 
-function sendEmail(email) {
+// Добавляем тип для параметра email
+function sendEmail(email: string) {
   const user = typeof window !== 'undefined' ? localStorage.getItem('user') : '';
   const body = `Здравствуйте, я нашел вашего питомца.%0A-----------%0AС уважением, ${user}`;
   window.open(`mailto:${email}?subject=Потерянный зверь&body=${body}`);
 }
 
-function Animal(props) {
+// Тип для данных животного
+interface AnimalData {
+  header: string;
+  content: string;
+  img: string;
+  email: string;
+}
+
+function Animal(props: { data: AnimalData }) {
   if (!props.data) return <p>Loading</p>;
   const { header, content, img } = props.data;
   
@@ -68,7 +77,7 @@ function Animal(props) {
 }
 
 export default function Home() {
-  const [animals, setAnimals] = React.useState([]);
+  const [animals, setAnimals] = React.useState<AnimalData[]>([]);
 
   React.useEffect(() => {
     fetch('/animals.json')
