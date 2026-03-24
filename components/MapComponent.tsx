@@ -6,8 +6,7 @@ import 'leaflet/dist/leaflet.css';
 import { useEffect } from 'react';
 
 // Исправляем стандартные иконки для Leaflet
-// Делаем это только на клиенте, чтобы избежать ошибок SSR
-export default function MapComponent({ owners, selectedOwner, setSelectedOwner }) {
+export default function MapComponent({ owners, selectedOwner, setSelectedOwner }: any) {
   useEffect(() => {
     // Исправляем иконки только на клиенте
     if (typeof window !== 'undefined') {
@@ -21,13 +20,14 @@ export default function MapComponent({ owners, selectedOwner, setSelectedOwner }
     }
   }, []);
 
-  const center = selectedOwner 
+  // Определяем центр карты с правильным типом
+  const center: [number, number] = selectedOwner 
     ? [selectedOwner.lat, selectedOwner.lng] 
     : [53.195, 45.000];
 
   return (
     <MapContainer 
-      center={center} 
+      center={center}
       zoom={13} 
       style={{ height: '500px', width: '100%', borderRadius: '8px' }}
     >
@@ -35,10 +35,10 @@ export default function MapComponent({ owners, selectedOwner, setSelectedOwner }
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
       />
-      {owners.map(owner => (
+      {owners.map((owner: any) => (
         <Marker 
           key={owner.id} 
-          position={[owner.lat, owner.lng]}
+          position={[owner.lat, owner.lng] as [number, number]}
           eventHandlers={{
             click: () => setSelectedOwner(owner)
           }}
