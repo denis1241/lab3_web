@@ -42,14 +42,12 @@ const contentStyle = {
   textShadow: '1px 1px 2px rgba(0,0,0,0.5)'
 };
 
-// Добавляем тип для параметра email
 function sendEmail(email: string) {
   const user = typeof window !== 'undefined' ? localStorage.getItem('user') : '';
   const body = `Здравствуйте, я нашел вашего питомца.%0A-----------%0AС уважением, ${user}`;
   window.open(`mailto:${email}?subject=Потерянный зверь&body=${body}`);
 }
 
-// Тип для данных животного
 interface AnimalData {
   header: string;
   content: string;
@@ -107,25 +105,36 @@ export default function Home() {
   }
 
   return (
-    <>
-      <div>
-        <button onClick={logout} style={{ position: 'absolute', top: 10, right: 10, zIndex: 10 }}>logout</button>
-        <h1 style={{ textAlign: 'center' }}>Petto</h1>
-        
-        <AwesomeSlider style={{ "--slider-height-percentage": "60%" }}>
-          {animals.map((data, i) => (
-            <div key={i} onClick={() => sendEmail(data?.email)}>
-              <Animal data={data} />
-            </div>
-          ))}
-        </AwesomeSlider>
-        
-        <footer style={{ textAlign: 'center', padding: '20px' }}>
-          Petto, (c) 2026
-        </footer>
-      </div>
+    <div style={{ position: 'relative', minHeight: '100vh' }}>
+      <button onClick={logout} style={{ position: 'absolute', top: 10, right: 10, zIndex: 20, padding: '8px 16px', cursor: 'pointer' }}>logout</button>
+      <h1 style={{ textAlign: 'center', paddingTop: '20px', margin: 0 }}>Petto</h1>
       
-      <div style={{ textAlign: 'center', margin: '20px' }}>
+      {/* Скрываем стандартные кружочки слайдера и поднимаем кнопки навигации */}
+      <style>{`
+        .aws-sld__bullets {
+          display: none !important;
+        }
+        .aws-sld__controls {
+          z-index: 15 !important;
+        }
+        .aws-sld__wrapper {
+          z-index: 1 !important;
+        }
+      `}</style>
+      
+      <AwesomeSlider style={{ "--slider-height-percentage": "60%" }}>
+        {animals.map((data, i) => (
+          <div key={i} onClick={() => sendEmail(data?.email)}>
+            <Animal data={data} />
+          </div>
+        ))}
+      </AwesomeSlider>
+      
+      <footer style={{ textAlign: 'center', padding: '20px', position: 'relative', zIndex: 10, backgroundColor: '#f5f5f5' }}>
+        Petto, (c) 2026
+      </footer>
+      
+      <div style={{ textAlign: 'center', margin: '20px', position: 'relative', zIndex: 10 }}>
         <a href="/owners" style={{
           display: 'inline-block',
           padding: '10px 20px',
@@ -137,6 +146,6 @@ export default function Home() {
           Посмотреть местоположение хозяев
         </a>
       </div>
-    </>
+    </div>
   );
 }

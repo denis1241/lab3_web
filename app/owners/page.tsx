@@ -1,39 +1,24 @@
 'use client';
 
 import React from 'react';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
+import dynamic from 'next/dynamic';
+import Link from 'next/link';
 
-// Исправляем иконки маркеров в Next.js
-delete L.Icon.Default.prototype._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
-  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
-});
-
-// Тип для владельца
-interface Owner {
-  id: number;
-  name: string;
-  animal: string;
-  address: string;
-  lat: number;
-  lng: number;
-  phone: string;
-  email: string;
-}
+// Динамический импорт компонентов карты (только на клиенте)
+const MapWithNoSSR = dynamic(
+  () => import('../../components/MapComponent'),
+  { ssr: false, loading: () => <p>Загрузка карты...</p> }
+);
 
 export default function OwnersPage() {
-  const [owners, setOwners] = React.useState<Owner[]>([]);
+  const [owners, setOwners] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
-  const [selectedOwner, setSelectedOwner] = React.useState<Owner | null>(null);
+  const [selectedOwner, setSelectedOwner] = React.useState(null);
 
   React.useEffect(() => {
     fetch('/owners.json')
       .then(res => res.json())
-      .then((data: Owner[]) => {
+      .then(data => {
         setOwners(data);
         setLoading(false);
       })
@@ -42,9 +27,6 @@ export default function OwnersPage() {
         setLoading(false);
       });
   }, []);
-
-  // Центр карты (Пенза)
-  const center: [number, number] = [53.195, 45.000];
 
   if (loading) {
     return (
@@ -56,10 +38,23 @@ export default function OwnersPage() {
 
   return (
     <div style={{ padding: '20px', maxWidth: '1200px', margin: '0 auto' }}>
+      {/* Кнопка назад */}
+      <div style={{ marginBottom: '20px' }}>
+        <Link href="/" style={{
+          display: 'inline-block',
+          padding: '8px 16px',
+          backgroundColor: '#6c757d',
+          color: 'white',
+          textDecoration: 'none',
+          borderRadius: '5px'
+        }}>
+          ← Назад на главную
+        </Link>
+      </div>
+      
       <h1 style={{ textAlign: 'center' }}>Местоположение хозяев животных</h1>
       
       <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
-        {/* Список слева */}
         <div style={{ flex: '1', minWidth: '280px' }}>
           <h2>Список хозяев</h2>
           {owners.map(owner => (
@@ -83,36 +78,9 @@ export default function OwnersPage() {
           ))}
         </div>
         
-        {/* Карта справа */}
         <div style={{ flex: '2', minWidth: '400px' }}>
           <h2>Карта местоположений</h2>
-          <MapContainer 
-            center={selectedOwner ? [selectedOwner.lat, selectedOwner.lng] : center} 
-            zoom={13} 
-            style={{ height: '500px', width: '100%', borderRadius: '8px' }}
-          >
-            <TileLayer
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            />
-            {owners.map(owner => (
-              <Marker 
-                key={owner.id} 
-                position={[owner.lat, owner.lng]}
-                eventHandlers={{
-                  click: () => setSelectedOwner(owner)
-                }}
-              >
-                <Popup>
-                  <strong>{owner.name}</strong><br />
-                  Животное: {owner.animal}<br />
-                  Адрес: {owner.address}<br />
-                  Телефон: {owner.phone}<br />
-                  Email: {owner.email}
-                </Popup>
-              </Marker>
-            ))}
-          </MapContainer>
+          <MapWithNoSSR owners={owners} selectedOwner={selectedOwner} setSelectedOwner={setSelectedOwner} />
           {selectedOwner && (
             <div style={{ marginTop: '15px', padding: '10px', backgroundColor: '#e3f2fd', borderRadius: '8px' }}>
               <p><strong>Выбран:</strong> {selectedOwner.name} — {selectedOwner.address}</p>
