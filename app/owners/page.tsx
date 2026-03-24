@@ -4,21 +4,32 @@ import React from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 
-// Динамический импорт компонентов карты (только на клиенте)
 const MapWithNoSSR = dynamic(
   () => import('../../components/MapComponent'),
   { ssr: false, loading: () => <p>Загрузка карты...</p> }
 );
 
+// Тип для владельца
+interface Owner {
+  id: number;
+  name: string;
+  animal: string;
+  address: string;
+  lat: number;
+  lng: number;
+  phone: string;
+  email: string;
+}
+
 export default function OwnersPage() {
-  const [owners, setOwners] = React.useState([]);
+  const [owners, setOwners] = React.useState<Owner[]>([]);
   const [loading, setLoading] = React.useState(true);
-  const [selectedOwner, setSelectedOwner] = React.useState(null);
+  const [selectedOwner, setSelectedOwner] = React.useState<Owner | null>(null);
 
   React.useEffect(() => {
     fetch('/owners.json')
       .then(res => res.json())
-      .then(data => {
+      .then((data: Owner[]) => {
         setOwners(data);
         setLoading(false);
       })
@@ -38,7 +49,6 @@ export default function OwnersPage() {
 
   return (
     <div style={{ padding: '20px', maxWidth: '1200px', margin: '0 auto' }}>
-      {/* Кнопка назад */}
       <div style={{ marginBottom: '20px' }}>
         <Link href="/" style={{
           display: 'inline-block',
@@ -57,7 +67,7 @@ export default function OwnersPage() {
       <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
         <div style={{ flex: '1', minWidth: '280px' }}>
           <h2>Список хозяев</h2>
-          {owners.map(owner => (
+          {owners.map((owner: Owner) => (
             <div 
               key={owner.id} 
               onClick={() => setSelectedOwner(owner)}
